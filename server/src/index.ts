@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path'
+import http from 'http';  // Import the http module
 
 dotenv.config();
 const app = express();
@@ -343,6 +344,8 @@ app.get('/posts/:id', async (req : Request , res : Response) => {
 })
 
 // Starts the server
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+server.listen(3000, '0.0.0.0', () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
