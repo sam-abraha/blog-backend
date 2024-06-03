@@ -8,7 +8,6 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import http from 'http';  // Import the http module
 
 dotenv.config();
 const app = express();
