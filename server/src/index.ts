@@ -317,8 +317,6 @@ app.get('/posts/:id', async (req: Request, res: Response) => {
   res.json(postDoc);
 });
 
-const server = http.createServer(app);
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+app.listen(Number(PORT), "0.0.0.0", () => {
+  console.log(`Server listening at http://localhost:${PORT}`);
 });
