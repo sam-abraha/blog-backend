@@ -1,0 +1,11 @@
+[build]
+  service = "backend"
+  project = "51a92ff7-8a04-4996-8a64-968fa09d681d"
+  image = "node:16-alpine"
+  dockerfile = "./backend/Dockerfile"
+  
+[deploy]
+  [deploy.env]
+    DATABASE_URL = "${{ DATABASE_URL }}"
+    PORT = "${{ PORT }}"
+    SECRET_KEY = "${{ SECRET_KEY }}"
