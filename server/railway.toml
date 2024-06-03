@@ -1,11 +1,13 @@
 [build]
-  service = "backend"
-  project = "51a92ff7-8a04-4996-8a64-968fa09d681d"
-  image = "node:16-alpine"
-  dockerfile = "./backend/Dockerfile"
-  
-[deploy]
-  [deploy.env]
-    DATABASE_URL = "${{ DATABASE_URL }}"
-    PORT = "${{ PORT }}"
-    SECRET_KEY = "${{ SECRET_KEY }}"
+  builder = "Docker"
+  dockerfile = "Dockerfile"
+  args = { NODE_ENV = "production" }
+
+[env]
+  PORT = "3000"
+  DATABASE_URL = { fromSecret = "DATABASE_URL" }
+  SECRET_KEY = { fromSecret = "SECRET_KEY" }
+
+[[services]]
+  name = "backend"
+  ports = [{ internal_port = 3000, external_port = 3000 }]
