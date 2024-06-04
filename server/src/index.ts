@@ -59,6 +59,17 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Test');
 });
 
+async function testConnection() {
+  try {
+    await prisma.$connect();
+    console.log('Database connection successful!');
+  } catch (error) {
+    console.error('Database connection error:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 async function createUser(username: string, password: string) {
   try {
     const hashedPassword = await bcrypt.hash(password, SALT);
@@ -345,4 +356,5 @@ app.get('/posts/:id', async (req: Request, res: Response) => {
 
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`Server listening at http://localhost:${PORT}`);
+  testConnection();
 });
