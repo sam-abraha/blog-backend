@@ -18,16 +18,13 @@ const allowedOrigins = [
 ];
 
 const app = express();
-
 const corsOptions = {
-  origin: function (origin : any, callback : any) {
-    // Allow requests with no origin
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified origin.';
-      return callback(new Error(msg), false);
+  origin: function (origin : any , callback : any) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
