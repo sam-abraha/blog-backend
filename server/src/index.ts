@@ -141,7 +141,7 @@ app.get('/profile', (req: Request, res: Response) => {
 
   jwt.verify(token, SECRET_KEY, (error: any, info: any) => {
     if (error) {
-      throw error;
+      return res.status(401).json({ error: 'Invalid token' });
     }
     res.json(info);
   });
