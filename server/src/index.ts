@@ -10,13 +10,40 @@ import fs from 'fs';
 import path from 'path';
 
 dotenv.config();
+
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://magnificent-semolina-7cffa4.netlify.app'
+];
+
 const app = express();
+
+const corsOptions = {
+  origin: function (origin : any, callback : any) {
+    // Allow requests with no origin
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+/*
 app.use(cors({
   origin: 'http://localhost:5173', // Allow this origin
   credentials: true, // Allow credentials
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 }));
+*/
 app.use(express.json());
 app.use(cookieParser());
 // Middleware to serve static files
