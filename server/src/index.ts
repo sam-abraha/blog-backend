@@ -180,44 +180,49 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
   }
 
   const { originalname, path: tempPath } = req.file as Express.Multer.File;
-
-  if (!originalname) {
-    return res.status(400).json({ error: 'No original file name found' });
-  }
-
-  if (!req.file.path) {
-    return res.status(400).json({ error: 'No file path found' });
-  }
-
   const ext = path.extname(originalname);
   const newPath = `${tempPath}${ext}`;
   const finalPath = newPath.replace(/\\/g, '/');
 
-  fs.renameSync(tempPath, newPath);
-
-  const { title, summary, content } = req.body;
-  const { token } = req.cookies;
-
   try {
-    jwt.verify(token, SECRET_KEY, async (error: any, info: any) => {
-      if (error) throw error;
-      const postDoc = await prisma.post.create({
-        data: {
-          title,
-          summary,
-          content,
-          cover: finalPath,
-          published: true,
-          authorId: info.id,
-        },
-      });
-      res.status(201).json(postDoc);
-      console.log(finalPath);
+    fs.renameSync(tempPath, newPath);
+
+    const { title, summary, content } = req.body;
+    const { token } = req.cookies;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    }
+
+    jwt.verify(token, SECRET_KEY, async (error : any , info : any) => {
+      if (error) {
+        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+      }
+
+      try {
+        const postDoc = await prisma.post.create({
+          data: {
+            title,
+            summary,
+            content,
+            cover: finalPath,
+            published: true,
+            authorId: info.id,
+          },
+        });
+        res.status(201).json(postDoc);
+        console.log(finalPath);
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        res.status(500).json({ message: 'Error creating post' });
+      }
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating post' });
+  } catch (fileError) {
+    console.error('File system error:', fileError);
+    res.status(500).json({ message: 'Error handling file upload' });
   }
 });
+
 
 app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
   const { id } = req.params;
