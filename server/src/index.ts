@@ -14,7 +14,7 @@ dotenv.config();
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://magnificent-semolina-7cffa4.netlify.app'
+  'https://myfullstacktechblog.netlify.app'
 ];
 
 const app = express();
