@@ -110,7 +110,8 @@ app.post('/signin', async (req: Request, res: Response) => {
         if (error) {
           throw error;
         }
-        res.cookie('token', token).json({ name: username, id: userDoc.id });
+        res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true })
+        .json({ name: username, id: userDoc.id });
       });
     } else if (!passwordMatch) {
       return res.status(401).json({ error: 'Password invalid' });
