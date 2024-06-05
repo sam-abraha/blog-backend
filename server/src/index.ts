@@ -88,9 +88,7 @@ app.post('/signin', async (req: Request, res: Response) => {
 
   try {
     const userDoc = await prisma.user.findUnique({
-      where: {
-        name: username,
-      },
+      where: { name: username },
     });
 
     if (!userDoc) {
@@ -103,24 +101,23 @@ app.post('/signin', async (req: Request, res: Response) => {
 
     const passwordMatch = bcrypt.compareSync(password, userDoc.password);
     if (passwordMatch) {
-      jwt.sign({
-        name: username,
-        id: userDoc.id,
-      }, SECRET_KEY, {}, (error, token) => {
+      jwt.sign({ name: username, id: userDoc.id }, SECRET_KEY, {}, (error, token) => {
         if (error) {
-          throw error;
+          console.error('JWT sign error:', error);
+          return res.status(500).json({ error: 'Error generating token' });
         }
         res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true })
-        .json({ name: username, id: userDoc.id });
+           .json({ name: username, id: userDoc.id });
       });
-    } else if (!passwordMatch) {
-      return res.status(401).json({ error: 'Password invalid' });
+    } else {
+      return res.status(401).json({ error: 'Invalid password' });
     }
   } catch (error) {
-    console.error('Failed to signin:', error);
+    console.error('Signin error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 app.post('/signup', async (req: Request, res: Response) => {
   try {
