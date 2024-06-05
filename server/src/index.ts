@@ -147,7 +147,7 @@ app.get('/profile', (req: Request, res: Response) => {
 });
 
 app.post('/signout', (req: Request, res: Response) => {
-  res.cookie('token', '').json('Success: User signed out');
+  res.clearCookie('token');
 });
 
 app.get('/posts', async (req: Request, res: Response) => {
