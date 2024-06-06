@@ -8,7 +8,6 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import { initializeApp } from "firebase/app";
 
 dotenv.config();
 
