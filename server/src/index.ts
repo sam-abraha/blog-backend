@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-const { bucket } = require('./firebase');
+import { bucket } from './firebase'
 
 dotenv.config();
 
@@ -192,49 +192,59 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
   }
 
 
+  /*
   const { originalname, path: tempPath } = req.file as Express.Multer.File;
   const ext = path.extname(originalname);
   const newPath = `${tempPath}${ext}`;
   const finalPath = newPath.replace(/\\/g, '/');
+  */
 
-  try {
-    fs.renameSync(tempPath, newPath);
+  const { originalname, buffer } = req.file;
+  const blob = bucket.file(originalname);
+  const blobStream = blob.createWriteStream();
 
-    const { title, summary, content } = req.body;
-    const { token } = req.cookies;
+  blobStream.on('error', (err : any) => {
+    console.error('Blob stream error:', err);
+    res.status(500).json({ error: 'File upload error' });
+  });
 
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
+  blobStream.on('finish', async () => {
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-    jwt.verify(token, SECRET_KEY, async (error : any , info : any) => {
-      if (error) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    try {
+      const { title, summary, content } = req.body;
+      const { token } = req.cookies;
+
+      if (!token) {
+        return res.status(401).json({ error: 'Unauthorized: No token provided' });
       }
 
-      try {
+      jwt.verify(token, SECRET_KEY, async (error : any, info : any) => {
+        if (error) {
+          return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        }
+
         const postDoc = await prisma.post.create({
           data: {
             title,
             summary,
             content,
-            cover: finalPath,
+            cover: publicUrl,
             published: true,
             authorId: info.id,
           },
         });
         res.status(201).json(postDoc);
-        console.log(finalPath);
-      } catch (dbError) {
-        console.error('Database error:', dbError);
-        res.status(500).json({ message: 'Error creating post' });
-      }
-    });
-  } catch (fileError) {
-    console.error('File system error:', fileError);
-    res.status(500).json({ message: 'Error handling file upload' });
-  }
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      res.status(500).json({ message: 'Error creating post' });
+    }
+  });
+
+  blobStream.end(buffer);
 });
+
 
 
 app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
