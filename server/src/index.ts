@@ -43,7 +43,9 @@ const prisma = new PrismaClient();
 const PORT = parseInt(process.env.PORT as string, 10) || 3000;  // Ensure PORT is a number
 const SECRET_KEY: string = process.env.SECRET_KEY as string;
 const SALT = bcrypt.genSaltSync(10);
-const uploadMiddleware = multer({ dest: 'uploads/' });
+const storage = multer.memoryStorage();
+const uploadMiddleware = multer({ storage });
+//const uploadMiddleware = multer({ dest: 'uploads/' });
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Test');
@@ -57,6 +59,20 @@ async function testConnection() {
     console.error('Database connection error:', error);
   } finally {
     await prisma.$disconnect();
+  }
+}
+
+async function connectWithRetry() {
+  let connected = false;
+  while (!connected) {
+    try {
+      await prisma.$connect();
+      connected = true;
+      console.log('Connected to the database');
+    } catch (error) {
+      console.error('Database connection failed. Retrying in 5 seconds...', error);
+      await new Promise(res => setTimeout(res, 5000));
+    }
   }
 }
 
@@ -174,6 +190,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
+
 
   const { originalname, path: tempPath } = req.file as Express.Multer.File;
   const ext = path.extname(originalname);
@@ -355,4 +372,5 @@ app.get('/posts/:id', async (req: Request, res: Response) => {
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`Server listening at http://localhost:${PORT}`);
   testConnection();
+  connectWithRetry();
 });
