@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { initializeApp } from "firebase/app";
 
 dotenv.config();
 
@@ -19,6 +20,16 @@ const allowedOrigins = [
 ];
 
 const app = express();
+
+const firebaseConfig = {
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID
+};
+
 const corsOptions = {
   origin: function (origin : any , callback : any) {
     if (!origin || allowedOrigins.includes(origin)) {
