@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+const { bucket } = require('./firebase');
 
 dotenv.config();
 
@@ -33,15 +34,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-/*
-app.use(cors({
-  origin: 'http://localhost:5173', // Allow this origin
-  credentials: true, // Allow credentials
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-}));
-*/
 app.use(express.json());
 app.use(cookieParser());
 // Middleware to serve static files
