@@ -191,14 +191,6 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-
-  /*
-  const { originalname, path: tempPath } = req.file as Express.Multer.File;
-  const ext = path.extname(originalname);
-  const newPath = `${tempPath}${ext}`;
-  const finalPath = newPath.replace(/\\/g, '/');
-  */
-
   const { originalname, buffer } = req.file;
   const blob = bucket.file(originalname);
   const blobStream = blob.createWriteStream();
@@ -209,7 +201,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
   });
 
   blobStream.on('finish', async () => {
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
 
     try {
       const { title, summary, content } = req.body;
