@@ -145,7 +145,7 @@ app.get('/profile', (req: Request, res: Response) => {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
-  jwt.verify(token, SECRET_KEY, async (error: any, userInfo: any) => {
+  jwt.verify(token, SECRET_KEY, {}, async (error: any, userInfo: any) => {
     if (error) {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
@@ -168,6 +168,7 @@ app.get('/profile', (req: Request, res: Response) => {
     }
   });
 });
+
 
 app.post('/signout', (req: Request, res: Response) => {
   res.clearCookie('token', {
@@ -315,41 +316,48 @@ app.delete('/posts/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { token } = req.cookies;
 
+  // Check if token exists
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
   try {
+    // Verfiy authentication and authorization
     jwt.verify(token, SECRET_KEY, async (error: any, info: any) => {
       if (error) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
+      // Find post in database
       const post = await prisma.post.findUnique({
         where: {
           id: parseInt(id),
         },
       });
 
+      // Check if post exists
       if (!post) {
         return res.status(400).json({ error: 'Post not found' });
       }
 
+      // Check if user is author of post
       if (post.authorId !== info.id) {
         return res.status(403).json({ error: 'Forbidden: You are not the author of this post' });
       }
 
-      if (post.cover) {
-        const filePath = path.join(__dirname, '..', post.cover);
-        fs.unlink(filePath, (error) => {
-          if (error) {
-            console.log('Error deleting file:', error);
-          } else {
-            console.log('File deleted successfully:', filePath);
-          }
-        });
-      }
+      const fileName = decodeURIComponent(new URL(post.cover).pathname.split('/').pop()!);
 
+      // Delete file from Firebase Storage
+      const fileRef = bucket.file(fileName);
+      fileRef.delete()
+        .then(() => {
+          console.log('File deleted successfully from Firebase Storage');
+        })
+        .catch((error: any) => {
+          console.error('Error deleting file from Firebase Storage:', error);
+        });
+
+      // Delete post from database
       await prisma.post.delete({
         where: {
           id: parseInt(id),
