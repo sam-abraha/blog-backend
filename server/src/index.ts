@@ -45,7 +45,6 @@ const SECRET_KEY: string = process.env.SECRET_KEY as string;
 const SALT = bcrypt.genSaltSync(10);
 const storage = multer.memoryStorage();
 const uploadMiddleware = multer({ storage });
-//const uploadMiddleware = multer({ dest: 'uploads/' });
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Test');
@@ -143,14 +142,30 @@ app.get('/profile', (req: Request, res: Response) => {
   const { token } = req.cookies;
 
   if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
+    return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
-  jwt.verify(token, SECRET_KEY, (error: any, info: any) => {
+  jwt.verify(token, SECRET_KEY, async (error: any, userInfo: any) => {
     if (error) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
-    res.json(info);
+
+    try {
+      const userDoc = await prisma.user.findUnique({
+        where: { 
+          id: userInfo.id
+         },
+      });
+
+      if (!userDoc) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({ id: userDoc.id, name: userDoc.name });
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 });
 
@@ -201,7 +216,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
   });
 
   blobStream.on('finish', async () => {
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
+    const filePath = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
 
     try {
       const { title, summary, content } = req.body;
@@ -221,7 +236,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
             title,
             summary,
             content,
-            cover: publicUrl,
+            cover: filePath,
             published: true,
             authorId: info.id,
           },
@@ -236,7 +251,6 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
 
   blobStream.end(buffer);
 });
-
 
 
 app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
@@ -296,6 +310,7 @@ app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
   }
 });
 
+
 app.delete('/posts/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { token } = req.cookies;
@@ -347,7 +362,8 @@ app.delete('/posts/:id', async (req: Request, res: Response) => {
     console.error('Error deleting post:', error);
     res.status(500).json({ error: 'Failed to delete post' });
   }
-});
+}); 
+
 
 app.get('/posts/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
