@@ -257,7 +257,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
 
 app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
   const { id } = req.params;
-  const { title, summary, content } = req.body;
+  const { title, summary, content, imgCredit } = req.body;
   const { token } = req.cookies;
   let filePath: string;
 
@@ -283,7 +283,9 @@ app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
       }
 
       const post = await prisma.post.findUnique({
-        where: { id: parseInt(id) },
+        where: { 
+          id: parseInt(id) 
+        },
       });
 
       if (!post) {
@@ -295,11 +297,14 @@ app.put('/posts/:id', uploadMiddleware.single('file'), async (req, res) => {
       }
 
       const updatedPostDoc = await prisma.post.update({
-        where: { id: parseInt(id) },
+        where: { 
+          id: parseInt(id) 
+        },
         data: {
           title,
           summary,
           content,
+          imgCredit,
           cover: filePath ? filePath : post.cover,
         },
       });
