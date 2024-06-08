@@ -220,7 +220,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
     const filePath = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
 
     try {
-      const { title, summary, content } = req.body;
+      const { title, summary, content, imgCredit} = req.body;
       const { token } = req.cookies;
 
       if (!token) {
@@ -237,6 +237,7 @@ app.post('/posts', uploadMiddleware.single('file'), async (req: Request, res: Re
             title,
             summary,
             content,
+            imgCredit,
             cover: filePath,
             published: true,
             authorId: info.id,
