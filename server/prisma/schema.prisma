@@ -27,6 +27,7 @@ model Post {
   summary   String
   content   String
   cover     String
+  imgCredit String
   published Boolean @default(true)
   author    User    @relation(fields: [authorId], references: [id])
   authorId  Int
