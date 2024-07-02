@@ -114,7 +114,11 @@ app.post('/signin', async (req: Request, res: Response) => {
           console.error('JWT sign error:', error);
           return res.status(500).json({ error: 'Error generating token' });
         }
-        res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true })
+        res.cookie('token', token, { 
+          httpOnly: true, 
+          sameSite: 'none', 
+          secure: process.env.NODE_ENV === 'production' 
+        })
            .json({ name: username, id: userDoc.id });
       });
     } else {
@@ -173,7 +177,7 @@ app.get('/profile', (req: Request, res: Response) => {
 app.post('/signout', (req: Request, res: Response) => {
   res.clearCookie('token', {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     secure: process.env.NODE_ENV === 'production',
   });
   res.json({ message: 'Success: User signed out' });
