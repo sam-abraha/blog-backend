@@ -1,6 +1,6 @@
 const prisma = require('../confiq/prisma')
 
-class UserRepository {
+class PostRepository {
     async findAll() {
         return prisma.post.findMany({
         include: {

@@ -5,20 +5,19 @@ const prisma = require('../confiq/prisma');
 const SECRET_KEY = process.env.SECRET_KEY;
 const SALT = bcrypt.genSaltSync(10);
 
+const userRepository = require('../repositories/userRepository')
+
 async function createUser(username, password) {
     const hashedPassword = await bcrypt.hash(password, SALT);
-    return await prisma.user.create({
-        data: {
-            name: username,
-            password: hashedPassword,
-        },
-    });
+    const data = {name, password}
+    return userRepository.create({
+        name: username,
+        password: hashedPassword,
+  });
 }
 
 async function authenticateUser(username, password) {
-    const userDoc = await prisma.user.findUnique({
-        where: { name: username },
-    });
+    const userDoc = await userRepository.findByName(name)
     if (!userDoc) return null;
 
     const passwordMatch = bcrypt.compareSync(password, userDoc.password);
@@ -30,11 +29,7 @@ async function authenticateUser(username, password) {
 
 async function getUserFromToken(token) {
     const userInfo = verifyToken(token)
-    return prisma.user.findUnique({
-        where: {
-            id: userInfo.id
-        }
-    })
+    return userRepository.findById(userInfo)
 }
 
 module.exports = {

@@ -1,84 +1,62 @@
 
 const { bucket } = require('../firebase');
 const prisma = require('../confiq/prisma');
+const postRepository = require('../repositories/postRepository')
 
 async function getPosts() {
-    return await prisma.post.findMany({
-        include: {
-            author: {
-              select: {
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 20,
-        });
+    return postRepository.findAll();
 }
 
 async function getPostById(id) {
-    return await prisma.post.findUnique({
-        where: { 
-            id: parseInt(id) 
-        },
-        include: { author: { select: { name: true }}},
-    });
+    return postRepository.findById(id);
 }
 
 async function createPost(data) {
     const { title, summary, content, imgCredit, cover, authorId } = data;
-    return await prisma.post.create({
-        data: {
-            title,
-            summary,
-            content,
-            imgCredit,
-            cover,
-            published: true,
-            authorId,
-        },
-    });
+    return postRepository.create({
+    ...data,
+    published: true,
+  });
 }
 
 async function updatePost(id, data) {
-    return await prisma.post.update({
-        where: { 
-            id: parseInt(id) 
-        },
-        data,
-    });
+    return postRepository.update(id,data)
 }
 
 async function deletePost(id) {
-    const post = await prisma.post.findUnique({
-         where: { 
-            id: parseInt(id) 
-        } 
-        });
-    if (post) {
-        const fileName = decodeURIComponent(new URL(post.cover).pathname.split('/').pop());
+  const post =
+    await postRepository.findById(id);
 
-        try {
-            await bucket.file(fileName).delete();
-            console.log('File deleted successfully');
-        } catch (error) {
-            if (error.code === 404) {
-                console.warn('File not found in the bucket');
-            } else {
-                console.error('Error deleting file from bucket:', error);
-                throw error;
-            }
-        }
+  if (!post) {
+    return;
+  }
 
-        await prisma.post.delete({ 
-            where: { 
-                id: parseInt(id) 
-            } 
-        });
+  const fileName = decodeURIComponent(
+    new URL(post.cover)
+      .pathname
+      .split('/')
+      .pop(),
+  );
+
+  try {
+    await bucket.file(fileName).delete();
+
+    console.log(
+      'File deleted successfully',
+    );
+  } catch (error) {
+    if (error.code === 404) {
+      console.warn(
+        'File not found in bucket',
+      );
+    } else {
+      throw error;
     }
+  }
+
+  await postRepository.delete(id);
 }
+
 
 module.exports = {
     getPosts,
