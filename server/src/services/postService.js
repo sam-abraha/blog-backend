@@ -1,7 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const { bucket } = require('../firebase');
 
-const prisma = new PrismaClient();
+const { bucket } = require('../firebase');
+const prisma = require('../confiq/prisma');
 
 async function getPosts() {
     return await prisma.post.findMany({

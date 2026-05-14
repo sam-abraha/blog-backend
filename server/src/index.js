@@ -3,10 +3,10 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./confiq/prisma');
 
 dotenv.config();
-const prisma = new PrismaClient();
+
 
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');

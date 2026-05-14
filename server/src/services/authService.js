@@ -1,8 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient();
+const prisma = require('../confiq/prisma');
 const SECRET_KEY = process.env.SECRET_KEY;
 const SALT = bcrypt.genSaltSync(10);
 
