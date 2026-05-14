@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const {generateToken, verifyToken} = require('../utils/jwt')
 
 const prisma = require('../confiq/prisma');
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -24,18 +24,17 @@ async function authenticateUser(username, password) {
     const passwordMatch = bcrypt.compareSync(password, userDoc.password);
     if (!passwordMatch) return null;
 
-    const token = jwt.sign({ name: username, id: userDoc.id }, SECRET_KEY);
+    const token = generateToken({name: username, id: userDoc.id})
     return { token, user: { name: username, id: userDoc.id } };
 }
 
 async function getUserFromToken(token) {
-    return new Promise((resolve, reject) => {
-        jwt.verify(token, SECRET_KEY, async (error, userInfo) => {
-            if (error) return reject(error);
-            const userDoc = await prisma.user.findUnique({ where: { id: userInfo.id } });
-            resolve(userDoc);
-        });
-    });
+    const userInfo = verifyToken(token)
+    return prisma.user.findUnique({
+        where: {
+            id: userInfo.id
+        }
+    })
 }
 
 module.exports = {
