@@ -19,7 +19,11 @@ class UserRepository {
         return prisma.user.findUnique({
             where : {
                 id
-            }
+            },
+            select: {
+                id: true,
+                name: true,
+            },
         })
     }
 }
