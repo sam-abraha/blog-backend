@@ -1,6 +1,6 @@
 
 const { bucket } = require('../firebase');
-const prisma = require('../confiq/prisma');
+const prisma = require('../config/prisma');
 const postRepository = require('../repositories/postRepository')
 
 async function getPosts() {

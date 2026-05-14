@@ -1,4 +1,4 @@
-const prisma = require('../confiq/prisma')
+const prisma = require('../config/prisma')
 
 class UserRepository {
     async create(data) {

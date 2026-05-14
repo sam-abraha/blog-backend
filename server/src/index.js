@@ -3,7 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const prisma = require('./confiq/prisma');
+const prisma = require('./config/prisma');
 const errorMiddleware = require('./middlewares/errorMiddleware')
 
 dotenv.config();

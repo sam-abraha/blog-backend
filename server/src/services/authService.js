@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const {generateToken, verifyToken} = require('../utils/jwt')
 
-const prisma = require('../confiq/prisma');
+const prisma = require('../config/prisma');
 const SECRET_KEY = process.env.SECRET_KEY;
 const SALT = bcrypt.genSaltSync(10);
 
