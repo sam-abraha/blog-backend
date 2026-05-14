@@ -37,10 +37,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(errorMiddleware);
 
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
+app.use(errorMiddleware);
 
 async function testConnection() {
   try {
