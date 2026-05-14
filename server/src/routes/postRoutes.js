@@ -3,6 +3,9 @@ const multer = require('multer');
 const { getPosts, getPostById, createPost, updatePost, deletePost } = require('../services/postService');
 const { getUserFromToken } = require('../services/authService');
 const { bucket } = require ('../firebase')
+const authMiddleware = require(
+  '../middlewares/authMiddleware'
+);
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -18,7 +21,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', uploadMiddleware.single('file'), async (req, res) => {
+router.post('/',authMiddleware, uploadMiddleware.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -37,13 +40,11 @@ router.post('/', uploadMiddleware.single('file'), async (req, res) => {
 
         try {
             const { title, summary, content, imgCredit } = req.body;
-            const { token } = req.cookies;
 
             if (!token) {
                 return res.status(401).json({ error: 'Unauthorized: No token provided' });
             }
-
-            const user = await getUserFromToken(token);
+            const user = req.user;
             if (!user) {
                 return res.status(401).json({ error: 'Unauthorized: Invalid token' });
             }
@@ -82,17 +83,12 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.put('/:id', uploadMiddleware.single('file'), async (req, res) => {
+router.put('/:id', authMiddleware,uploadMiddleware.single('file'), async (req, res) => {
     const { id } = req.params;
     const { title, summary, content, imgCredit } = req.body;
-    const { token } = req.cookies;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
 
     try {
-        const user = await getUserFromToken(token);
+        const user = req.user
         if (!user) {
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
         }
@@ -134,15 +130,11 @@ router.put('/:id', uploadMiddleware.single('file'), async (req, res) => {
 });
 
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware,async (req, res) => {
     const { id } = req.params;
-    const { token } = req.cookies;
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
 
     try {
-        const user = await getUserFromToken(token);
+        const user = req.user;
         const post = await getPostById(id);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
