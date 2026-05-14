@@ -53,20 +53,6 @@ async function testConnection() {
   }
 }
 
-async function connectWithRetry() {
-  let connected = false;
-  while (!connected) {
-    try {
-      await prisma.$connect();
-      connected = true;
-      console.log('Connected to the database');
-    } catch (error) {
-      console.error('Database connection failed. Retrying in 5 seconds...', error);
-      await new Promise(res => setTimeout(res, 5000));
-    }
-  }
-}
-
 
 const PORT = parseInt(process.env.PORT) || 3000;
 app.listen(Number(PORT), "0.0.0.0", () => {
