@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const prisma = require('./confiq/prisma');
+const errorMiddleware = require('./middlewares/errorMiddleware')
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+app.use(errorMiddleware);
 
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
