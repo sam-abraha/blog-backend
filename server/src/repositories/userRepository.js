@@ -7,7 +7,7 @@ class UserRepository {
         })
     }
 
-    async findByName(data) {
+    async findByName(name) {
         return prisma.user.findUnique({
             where : {
                 name
@@ -15,7 +15,7 @@ class UserRepository {
         })
     }
 
-    async findById(data) {
+    async findById(id) {
         return prisma.user.findUnique({
             where : {
                 id
