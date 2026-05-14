@@ -1,4 +1,5 @@
 const {verifyToken} = require('../utils/jwt')
+const {userRepository} = require('../repositories/userRepository')
 
 function authMiddleware(req,res,next) {
     try {
@@ -10,7 +11,14 @@ function authMiddleware(req,res,next) {
             })
         }
         const decoded = verifyToken(token)
-        req.user = decoded
+        const user = await userRepository.findById(decoded.id) // fetch user from db
+        
+        if(!user) {
+            return res.status(401).json({
+                error: 'User not found'
+            })
+        }
+        req.user = user
         next()
 
     }catch(error) {
